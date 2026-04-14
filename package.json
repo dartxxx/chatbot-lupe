@@ -1,0 +1,14 @@
+{
+  "name": "chatbot-lupe",
+  "version": "1.0.0",
+  "description": "Chatbot de IA para la Municipalidad de El Colorado - Asistente Lupe",
+  "main": "api/chat.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "vercel build",
+    "start": "vercel start"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.64.0"
+  }
+}
