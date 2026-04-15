@@ -5,7 +5,7 @@
   "main": "api/chat.js",
   "scripts": {
     "dev": "vercel dev",
-    "build": "vercel build",
+    "build": "echo 'skip'",
     "start": "vercel start"
   },
   "dependencies": {
