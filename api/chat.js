@@ -61,7 +61,7 @@ Tu creador: Darío Rial, técnico en redes e IA.`;
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'nvidia/llama-3.3-nemotron-70b-instruct',
+                model: 'meta/llama-3.3-70b-instruct',
                 messages: messages,
                 max_tokens: 400,
                 temperature: 0.7
