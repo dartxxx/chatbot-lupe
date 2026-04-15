@@ -1,552 +1,970 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lupe — Asistente Municipal de El Colorado</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #0f1117;
-            --bg-secondary: #161823;
-            --bg-card: #1c1f2e;
-            --bg-input: #252836;
-            --accent: #3b82f6;
-            --accent-light: #60a5fa;
-            --accent-glow: rgba(59, 130, 246, 0.15);
-            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --bot-bubble: #252836;
-            --user-bubble: #3b82f6;
-            --border: rgba(255,255,255,0.06);
-            --shadow: 0 8px 32px rgba(0,0,0,0.4);
-            --radius: 16px;
-            --radius-sm: 10px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lupe — Asistente Municipal de El Colorado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-primary: #0f1117;
+      --bg-secondary: #161823;
+      --bg-card: #1c1f2e;
+      --bg-input: #252836;
+      --accent: #3b82f6;
+      --accent-light: #60a5fa;
+      --accent-glow: rgba(59, 130, 246, 0.15);
+      --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --bot-bubble: #252836;
+      --user-bubble: #3b82f6;
+      --border: rgba(255,255,255,0.06);
+      --glass-bg: rgba(15, 23, 42, 0.75);
+      --glass-border: rgba(255,255,255,0.08);
+      --shadow: 0 8px 32px rgba(0,0,0,0.4);
+      --shadow-hover: 0 16px 48px rgba(0,0,0,0.5);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-lupe: 12px 12px 12px 4px;
+      --green: #22c55e;
+    }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg-primary: #f8fafc;
+        --bg-secondary: #e2e8f0;
+        --bg-card: #ffffff;
+        --bg-input: #f1f5f9;
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #94a3b8;
+        --bot-bubble: #e2e8f0;
+        --border: rgba(0,0,0,0.06);
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(0,0,0,0.08);
+        --shadow: 0 8px 32px rgba(0,0,0,0.1);
+        --shadow-hover: 0 16px 48px rgba(0,0,0,0.15);
+      }
+    }
 
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--bg-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            color: var(--text-primary);
-        }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* ── HEADER ── */
-        header {
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            padding: 14px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(12px);
-        }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+      min-height: 100vh;
+      display: flex;
+      color: var(--text-primary);
+    }
 
-        .header-left { display: flex; align-items: center; gap: 14px; }
+    /* Reading Progress */
+    .reading-progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 3px;
+      width: 0%;
+      background: var(--accent-gradient);
+      z-index: 1000;
+      transition: width 0.15s ease;
+    }
 
-        .bot-avatar {
-            width: 46px; height: 46px;
-            border-radius: 50%;
-            background: var(--accent-gradient);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 22px;
-            box-shadow: 0 0 20px rgba(59,130,246,0.3);
-            position: relative;
-        }
+    /* Sidebar */
+    .sidebar {
+      width: 280px;
+      min-width: 280px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border-right: 1px solid var(--glass-border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+    }
 
-        .bot-avatar::after {
-            content: '';
-            position: absolute;
-            bottom: 0; right: 0;
-            width: 12px; height: 12px;
-            border-radius: 50%;
-            background: #22c55e;
-            border: 2px solid var(--bg-secondary);
-            animation: livePulse 2s infinite;
-        }
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--glass-border);
+    }
 
-        @keyframes livePulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-            50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
-        }
+    .sidebar-header .bot-avatar {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-shrink: 0;
+    }
 
-        .bot-meta h1 {
-            font-size: 15px; font-weight: 600; color: var(--text-primary);
-        }
+    .sidebar-header .bot-avatar::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      border: 2px solid var(--bg-secondary);
+      animation: livePulse 2s infinite;
+    }
 
-        .bot-meta p {
-            font-size: 12px; color: #22c55e; margin-top: 2px;
-            display: flex; align-items: center; gap: 4px;
-        }
+    @keyframes livePulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+      50% { box-shadow: 0 0 0 6px rgba(34,197,94,0); }
+    }
 
-        .header-right { display: flex; align-items: center; gap: 10px; }
+    .sidebar-header h2 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
 
-        .city-tag {
-            background: rgba(59,130,246,0.1);
-            border: 1px solid rgba(59,130,246,0.2);
-            color: var(--accent-light);
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 11px; font-weight: 600;
-            display: flex; align-items: center; gap: 5px;
-        }
+    .sidebar-header p {
+      font-size: 11px;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 2px;
+    }
 
-        .menu-btn {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--text-muted);
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-        .menu-btn:hover { background: var(--bg-card); color: var(--text-primary); }
+    .sidebar-section h3 {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
 
-        /* ── MAIN CHAT ── */
-        main {
-            flex: 1;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            max-width: 760px;
-            width: 100%;
-            margin: 0 auto;
-        }
+    .sidebar-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
 
-        #chat {
-            flex: 1;
-            overflow-y: auto;
-            padding: 24px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+    .sidebar-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+    }
 
-        /* ── MESSAGE ── */
-        .msg-row {
-            display: flex;
-            gap: 10px;
-            max-width: 80%;
-            animation: msgIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+    /* CTA Buttons */
+    .cta-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 8px;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      font-family: inherit;
+    }
 
-        @keyframes msgIn {
-            from { opacity: 0; transform: translateY(12px) scale(0.97); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
+    .cta-btn:last-child { margin-bottom: 0; }
 
-        .msg-row.bot { align-self: flex-start; }
-        .msg-row.user { align-self: flex-end; flex-direction: row-reverse; }
+    .cta-btn:hover {
+      transform: translateY(-2px);
+    }
 
-        .msg-icon {
-            width: 30px; height: 30px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px; flex-shrink: 0;
-            margin-top: 2px;
-        }
-        .msg-row.bot .msg-icon { background: var(--accent-gradient); color: white; }
-        .msg-row.user .msg-icon { background: var(--bg-input); color: var(--text-secondary); }
+    .cta-btn.whatsapp {
+      background: linear-gradient(135deg, #25d366, #128c7e);
+      color: white;
+    }
 
-        .msg-content { display: flex; flex-direction: column; gap: 3px; }
+    .cta-btn.whatsapp:hover {
+      box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+    }
 
-        .msg-bubble {
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            font-size: 14px;
-            line-height: 1.6;
-            position: relative;
-        }
+    .cta-btn.email {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white;
+    }
 
-        .msg-row.bot .msg-bubble {
-            background: var(--bot-bubble);
-            color: var(--text-primary);
-            border-bottom-left-radius: 4px;
-            border: 1px solid var(--border);
-        }
+    .cta-btn.email:hover {
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+    }
 
-        .msg-row.user .msg-bubble {
-            background: var(--user-bubble);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
+    .cta-btn svg { width: 16px; height: 16px; }
 
-        .msg-time {
-            font-size: 10px;
-            color: var(--text-muted);
-            padding: 0 4px;
-        }
+    /* Skill / Badge List */
+    .badge-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
 
-        .msg-row.user .msg-time { text-align: right; }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+    }
 
-        /* ── DATE DIVIDER ── */
-        .date-divider {
-            text-align: center;
-            margin: 16px 0;
-            position: relative;
-        }
+    .badge.blue {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--accent-light);
+    }
 
-        .date-divider span {
-            background: var(--bg-primary);
-            padding: 4px 14px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            font-size: 11px;
-            color: var(--text-muted);
-            position: relative;
-            z-index: 1;
-        }
+    .badge.green {
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: var(--green);
+    }
 
-        /* ── TYPING ── */
-        .typing-row {
-            display: none;
-            gap: 10px;
-            max-width: 80%;
-            align-self: flex-start;
-            animation: msgIn 0.3s ease;
-        }
+    .badge.purple {
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #a78bfa;
+    }
 
-        .typing-row.visible { display: flex; }
+    .badge.orange {
+      background: rgba(249, 115, 22, 0.15);
+      border: 1px solid rgba(249, 115, 22, 0.3);
+      color: #fb923c;
+    }
 
-        .typing-row .msg-icon { background: var(--accent-gradient); color: white; }
+    /* Contact Item */
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
 
-        .typing-bubble {
-            background: var(--bot-bubble);
-            border: 1px solid var(--border);
-            border-bottom-left-radius: 4px;
-            border-radius: var(--radius);
-            padding: 14px 20px;
-            display: flex; gap: 5px; align-items: center;
-        }
+    .contact-item svg { width: 15px; height: 15px; color: var(--accent-light); }
 
-        .typing-bubble span {
-            width: 7px; height: 7px;
-            border-radius: 50%;
-            background: var(--text-muted);
-            animation: typingBounce 1.4s infinite;
-        }
-        .typing-bubble span:nth-child(2) { animation-delay: 0.15s; }
-        .typing-bubble span:nth-child(3) { animation-delay: 0.3s; }
+    /* Info block */
+    .info-block {
+      background: rgba(59, 130, 246, 0.08);
+      border: 1px solid rgba(59, 130, 246, 0.15);
+      border-radius: 10px;
+      padding: 12px;
+    }
 
-        @keyframes typingBounce {
-            0%, 60%, 100% { transform: translateY(0); }
-            30% { transform: translateY(-7px); }
-        }
+    .info-block p {
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
 
-        /* ── WELCOME ── */
-        .welcome {
-            text-align: center;
-            padding: 48px 24px 24px;
-            animation: fadeUp 0.6s ease;
-        }
+    .info-block strong { color: var(--text-primary); }
 
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    /* Main Chat Area */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
 
-        .welcome-icon {
-            width: 72px; height: 72px;
-            border-radius: 50%;
-            background: var(--accent-gradient);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 32px;
-            margin: 0 auto 20px;
-            box-shadow: 0 8px 32px rgba(59,130,246,0.25);
-        }
+    /* Header */
+    header {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
 
-        .welcome h2 { font-size: 20px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-        .welcome p { font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 320px; margin: 0 auto; }
-        .welcome p a { color: var(--accent-light); text-decoration: none; }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
 
-        /* ── INPUT AREA ── */
-        .input-area {
-            padding: 16px 20px 20px;
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border);
-        }
+    .bot-avatar-sm {
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
 
-        .input-row {
-            display: flex;
-            gap: 10px;
-            align-items: flex-end;
-            max-width: 760px;
-            margin: 0 auto;
-        }
+    .bot-avatar-sm::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      border: 2px solid var(--bg-secondary);
+      animation: livePulse 2s infinite;
+    }
 
-        #input {
-            flex: 1;
-            padding: 13px 18px;
-            border: 1px solid var(--border);
-            border-radius: 28px;
-            background: var(--bg-input);
-            color: var(--text-primary);
-            font-size: 14px;
-            outline: none;
-            transition: all 0.2s;
-            font-family: inherit;
-            line-height: 1.5;
-        }
+    .bot-meta h1 { font-size: 15px; font-weight: 600; }
+    .bot-meta p {
+      font-size: 12px;
+      color: var(--green);
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
 
-        #input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
+    .header-right { display: flex; align-items: center; gap: 10px; }
 
-        #input::placeholder { color: var(--text-muted); }
+    .city-tag {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.2);
+      color: var(--accent-light);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
 
-        #send {
-            width: 48px; height: 48px;
-            border-radius: 50%;
-            border: none;
-            background: var(--accent-gradient);
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 4px 16px rgba(59,130,246,0.3);
-        }
+    .menu-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
 
-        #send:hover {
-            transform: scale(1.07);
-            box-shadow: 0 6px 24px rgba(59,130,246,0.45);
-        }
+    .menu-btn:hover { background: var(--bg-card); color: var(--text-primary); }
 
-        #send:active { transform: scale(0.94); }
+    /* Chat */
+    main {
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      max-width: 800px;
+      width: 100%;
+      margin: 0 auto;
+    }
 
-        /* ── QUICK ACTIONS ── */
-        .quick-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            max-width: 760px;
-            margin: 0 auto 10px;
-            padding: 0 20px;
-        }
+    #chat {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
 
-        .quick-btn {
-            padding: 7px 14px;
-            border-radius: 20px;
-            border: 1px solid rgba(59,130,246,0.25);
-            background: rgba(59,130,246,0.07);
-            color: var(--accent-light);
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
-        }
+    /* Messages */
+    .msg-row {
+      display: flex;
+      gap: 10px;
+      max-width: 80%;
+      animation: msgIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
 
-        .quick-btn:hover {
-            background: rgba(59,130,246,0.15);
-            border-color: rgba(59,130,246,0.5);
-            transform: translateY(-1px);
-        }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
 
-        /* ── FOOTER ── */
-        .footer {
-            text-align: center;
-            padding: 8px;
-            font-size: 10px;
-            color: var(--text-muted);
-        }
+    .msg-row.bot { align-self: flex-start; }
+    .msg-row.user { align-self: flex-end; flex-direction: row-reverse; }
 
-        /* ── SCROLLBAR ── */
-        #chat::-webkit-scrollbar { width: 3px; }
-        #chat::-webkit-scrollbar-track { background: transparent; }
-        #chat::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+    .msg-icon {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
 
-        /* ── MODE BADGE ── */
-        .mode-badge {
-            position: fixed;
-            bottom: 94px; right: 20px;
-            background: rgba(59,130,246,0.15);
-            border: 1px solid rgba(59,130,246,0.3);
-            color: var(--accent-light);
-            padding: 4px 10px; border-radius: 12px;
-            font-size: 10px; display: none; z-index: 50;
-        }
-        .mode-badge.visible { display: block; }
+    .msg-row.bot .msg-icon {
+      background: var(--accent-gradient);
+      color: white;
+    }
 
-        /* ── ERROR ── */
-        .error-toast {
-            position: fixed;
-            bottom: 20px; left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: #ef4444;
-            color: white;
-            padding: 10px 20px; border-radius: 12px;
-            font-size: 13px; opacity: 0;
-            transition: all 0.3s ease; z-index: 200;
-        }
-        .error-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .msg-row.user .msg-icon {
+      background: var(--bg-input);
+      color: var(--text-secondary);
+    }
 
-        /* ── RESPONSIVE ── */
-        @media (max-width: 600px) {
-            .msg-row { max-width: 88%; }
-            header { padding: 12px 16px; }
-            .city-tag { display: none; }
-            #chat { padding: 16px 12px; }
-            .input-area { padding: 12px 16px 16px; }
-            .quick-row { padding: 0 16px; }
-        }
-    </style>
+    .msg-content { display: flex; flex-direction: column; gap: 3px; }
+
+    .msg-bubble {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .msg-row.bot .msg-bubble {
+      background: var(--bot-bubble);
+      color: var(--text-primary);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lupe);
+    }
+
+    .msg-row.user .msg-bubble {
+      background: var(--user-bubble);
+      color: white;
+      border-radius: 12px 12px 4px 12px;
+    }
+
+    .msg-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      padding: 0 4px;
+    }
+
+    .msg-row.user .msg-time { text-align: right; }
+
+    /* Welcome */
+    .welcome {
+      text-align: center;
+      padding: 48px 24px 24px;
+      animation: fadeUp 0.6s ease;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      box-shadow: 0 8px 32px rgba(59,130,246,0.25);
+    }
+
+    .welcome-icon svg { width: 36px; height: 36px; color: white; }
+
+    .welcome h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .welcome p { font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 320px; margin: 0 auto; }
+    .welcome p strong { color: var(--accent-light); }
+
+    /* Quick Actions */
+    .quick-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 0 20px 12px;
+    }
+
+    .quick-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--glass-border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .quick-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .quick-btn svg { width: 14px; height: 14px; }
+
+    /* Typing */
+    .typing-row {
+      display: none;
+      gap: 10px;
+      max-width: 80%;
+      align-self: flex-start;
+    }
+
+    .typing-row.visible { display: flex; }
+
+    .typing-row .msg-icon {
+      background: var(--accent-gradient);
+      color: white;
+    }
+
+    .typing-bubble {
+      background: var(--bot-bubble);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lupe);
+      padding: 14px 20px;
+      display: flex;
+      gap: 5px;
+      align-items: center;
+    }
+
+    .typing-bubble span {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      animation: typingBounce 1.4s infinite;
+    }
+
+    .typing-bubble span:nth-child(2) { animation-delay: 0.15s; }
+    .typing-bubble span:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-7px); }
+    }
+
+    /* Input Area */
+    .input-area {
+      padding: 16px 20px 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    #input {
+      flex: 1;
+      padding: 13px 18px;
+      border: 1px solid var(--glass-border);
+      border-radius: 28px;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    #input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    #input::placeholder { color: var(--text-muted); }
+
+    #send {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      border: none;
+      background: var(--accent-gradient);
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(59,130,246,0.3);
+    }
+
+    #send:hover {
+      transform: scale(1.07);
+      box-shadow: 0 6px 24px rgba(59,130,246,0.45);
+    }
+
+    #send:active { transform: scale(0.94); }
+
+    #send svg { width: 18px; height: 18px; }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 8px;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+
+    /* Error Toast */
+    .error-toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #ef4444;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 200;
+    }
+
+    .error-toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Scrollbar */
+    #chat::-webkit-scrollbar { width: 3px; }
+    #chat::-webkit-scrollbar-track { background: transparent; }
+    #chat::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+
+    /* Mode Badge */
+    .mode-badge {
+      position: fixed;
+      bottom: 94px;
+      right: 20px;
+      background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.3);
+      color: var(--accent-light);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 10px;
+      display: none;
+      z-index: 50;
+    }
+
+    .mode-badge.visible { display: block; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .sidebar {
+        display: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .msg-row { max-width: 88%; }
+      header { padding: 12px 16px; }
+      .city-tag { display: none; }
+      #chat { padding: 16px 12px; }
+      .input-area { padding: 12px 16px 16px; }
+      .quick-row { padding: 0 16px 12px; }
+    }
+  </style>
 </head>
 <body>
+  <div class="reading-progress" id="progress"></div>
 
-<header>
-    <div class="header-left">
-        <div class="bot-avatar">🤖</div>
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="bot-avatar">
+        <i data-lucide="bot" style="width:22px;height:22px;color:white"></i>
+      </div>
+      <div>
+        <h2>Lupe — Asistente Municipal</h2>
+        <p><i data-lucide="radio" style="width:10px;height:10px"></i> En línea · El Colorado</p>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Contacto Directo</h3>
+      <div class="sidebar-card">
+        <button class="cta-btn whatsapp" onclick="window.open('https://wa.me/549形式?text=Hola%20Lupe%20desde%20el%20chat%20municipal','_blank')">
+          <i data-lucide="message-circle"></i> WhatsApp Municipal
+        </button>
+        <button class="cta-btn email">
+          <i data-lucide="mail"></i> Email: municipalidad@elcolorado.gob.ar
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Trámites Destacados</h3>
+      <div class="sidebar-card">
+        <div class="badge-list">
+          <span class="badge blue">DNI y Pasaporte</span>
+          <span class="badge green">Registro Civil</span>
+          <span class="badge purple">Habilitación Comercial</span>
+          <span class="badge orange">Impuestos Locales</span>
+          <span class="badge blue">Facturas y Tributos</span>
+          <span class="badge green">Licencia de Conducir</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Horarios de Atención</h3>
+      <div class="sidebar-card">
+        <div class="info-block">
+          <p><strong>Lunes a Viernes:</strong><br>07:00 — 13:00</p>
+          <br>
+          <p><strong>Sábados:</strong> 08:00 — 12:00</p>
+          <br>
+          <p style="color:var(--accent-light);font-size:11px"><i data-lucide="map-pin" style="width:11px;height:11px;display:inline"></i> Centro Cívico, El Colorado, Formosa</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Datos del Distrito</h3>
+      <div class="sidebar-card">
+        <div class="info-block">
+          <p><strong>Partido:</strong> Laishi<br>
+          <strong>Provincia:</strong> Formosa<br>
+          <strong>Habitantes:</strong> ~25.000<br>
+          <strong>Región:</strong> Chaco Formosa</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Servicios</h3>
+      <div class="sidebar-card">
+        <div class="badge-list">
+          <span class="badge blue">Recolección</span>
+          <span class="badge green">Agua Potable</span>
+          <span class="badge purple">Alumbrado</span>
+          <span class="badge orange">Cloacas</span>
+          <span class="badge blue">Transito</span>
+          <span class="badge green">Emergencias 107</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <h3>Redes y Comunidad</h3>
+      <div class="sidebar-card">
+        <div class="contact-item">
+          <i data-lucide="users"></i> werzoneros 3.0 (Gaming)
+        </div>
+        <div class="contact-item">
+          <i data-lucide="radio-tower"></i> Frecuencia Municipal
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Chat -->
+  <div class="main-wrapper">
+    <header>
+      <div class="header-left">
+        <div class="bot-avatar-sm">
+          <i data-lucide="bot" style="width:22px;height:22px;color:white"></i>
+        </div>
         <div class="bot-meta">
-            <h1>Lupe — Asistente Municipal</h1>
-            <p><span style="width:6px;height:6px;border-radius:50%;background:#22c55e;display:inline-block"></span> En línea · El Colorado, Formosa</p>
+          <h1>Lupe — Asistente Municipal</h1>
+          <p><i data-lucide="radio" style="width:10px;height:10px"></i> En línea · El Colorado, Formosa</p>
         </div>
-    </div>
-    <div class="header-right">
-        <div class="city-tag">🏛️ El Colorado, Formosa</div>
-        <button class="menu-btn">⋮</button>
-    </div>
-</header>
+      </div>
+      <div class="header-right">
+        <div class="city-tag">
+          <i data-lucide="building" style="width:12px;height:12px"></i> El Colorado, Formosa
+        </div>
+        <button class="menu-btn">
+          <i data-lucide="more-vertical" style="width:16px;height:16px"></i>
+        </button>
+      </div>
+    </header>
 
-<main>
-    <div class="quick-row" id="quickRow">
-        <button class="quick-btn" onclick="sendQuick('¿Qué trámites puedo hacer?')">📋 Trámites</button>
-        <button class="quick-btn" onclick="sendQuick('¿Cuál es el horario de atención?')">🕐 Horarios</button>
-        <button class="quick-btn" onclick="sendQuick('Necesito hacer un reclamo')">📝 Reclamo</button>
-        <button class="quick-btn" onclick="sendQuick('¿Qué документы necesito para abrir un negocio?')">🏪 Habilitación</button>
-    </div>
+    <main>
+      <div class="quick-row" id="quickRow">
+        <button class="quick-btn" onclick="sendQuick('¿Qué trámites puedo hacer?')">
+          <i data-lucide="file-text"></i> Trámites
+        </button>
+        <button class="quick-btn" onclick="sendQuick('¿Cuál es el horario de atención?')">
+          <i data-lucide="clock"></i> Horarios
+        </button>
+        <button class="quick-btn" onclick="sendQuick('Necesito hacer un reclamo')">
+          <i data-lucide="file-warning"></i> Reclamo
+        </button>
+        <button class="quick-btn" onclick="sendQuick('¿Qué documentos necesito para abrir un negocio?')">
+          <i data-lucide="store"></i> Habilitación
+        </button>
+        <button class="quick-btn" onclick="sendQuick('¿Cuáles son los servicios disponibles?')">
+          <i data-lucide="wrench"></i> Servicios
+        </button>
+      </div>
 
-    <div id="chat">
+      <div id="chat">
         <div class="welcome">
-            <div class="welcome-icon">🤖</div>
-            <h2>¡Bienvenido!</h2>
-            <p>Soy <strong>Lupe</strong>, la asistente virtual de la<br>Municipalidad de El Colorado, Formosa.</p>
+          <div class="welcome-icon">
+            <i data-lucide="bot"></i>
+          </div>
+          <h2>¡Bienvenido!</h2>
+          <p>Soy <strong>Lupe</strong>, la asistente virtual de la<br>Municipalidad de El Colorado, Formosa.</p>
         </div>
-    </div>
+      </div>
 
-    <div class="typing-row" id="typingRow">
-        <div class="msg-icon">🤖</div>
+      <div class="typing-row" id="typingRow">
+        <div class="msg-icon">
+          <i data-lucide="bot" style="width:14px;height:14px"></i>
+        </div>
         <div class="typing-bubble"><span></span><span></span><span></span></div>
-    </div>
-</main>
+      </div>
+    </main>
 
-<div class="input-area">
-    <div class="input-row">
+    <div class="input-area">
+      <div class="input-row">
         <input type="text" id="input" placeholder="Escribí tu consulta..." autocomplete="off" />
-        <button id="send" onclick="send()">➤</button>
+        <button id="send" onclick="send()">
+          <i data-lucide="send"></i>
+        </button>
+      </div>
     </div>
-</div>
 
-<div class="footer">Municipalidad de El Colorado · Powered by IA</div>
+    <div class="footer">Municipalidad de El Colorado · Powered by IA</div>
+    <div class="mode-badge" id="modeBadge">MODO DEMO</div>
+    <div class="error-toast" id="errorToast"></div>
+  </div>
 
-<div class="mode-badge" id="modeBadge">MODO DEMO</div>
-<div class="error-toast" id="errorToast"></div>
+  <script>
+    // Init Lucide icons
+    lucide.createIcons();
 
-<script>
-    // ─────────────────────────────────────────
-    // Lógica igual que antes — sin cambios
-    // ─────────────────────────────────────────
+    // ── Chat Logic ──
     const API_URL = '/api/chat';
-
     const chat = document.getElementById('chat');
     const input = document.getElementById('input');
     const typingRow = document.getElementById('typingRow');
     const modeBadge = document.getElementById('modeBadge');
     const errorToast = document.getElementById('errorToast');
+    const progress = document.getElementById('progress');
 
     let sessionId = 's_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
 
     function t() {
-        return new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+      return new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
     }
 
     function addMsg(text, who) {
-        const wel = chat.querySelector('.welcome');
-        if (wel) wel.remove();
+      const wel = chat.querySelector('.welcome');
+      if (wel) wel.remove();
 
-        const row = document.createElement('div');
-        row.className = `msg-row ${who}`;
-        row.innerHTML = `
-            <div class="msg-icon">${who === 'bot' ? '🤖' : '👤'}</div>
-            <div class="msg-content">
-                <div class="msg-bubble">${text.replace(/\n/g, '<br>')}</div>
-                <div class="msg-time">${t()}</div>
-            </div>`;
-        chat.appendChild(row);
-        chat.scrollTop = chat.scrollHeight;
+      const icon = who === 'bot'
+        ? '<i data-lucide="bot" style="width:14px;height:14px"></i>'
+        : '<i data-lucide="user" style="width:14px;height:14px"></i>';
+
+      const row = document.createElement('div');
+      row.className = `msg-row ${who}`;
+      row.innerHTML = `
+        <div class="msg-icon">${icon}</div>
+        <div class="msg-content">
+          <div class="msg-bubble">${text.replace(/\n/g, '<br>')}</div>
+          <div class="msg-time">${t()}</div>
+        </div>`;
+      chat.appendChild(row);
+      lucide.createIcons({ nodes: [row] });
+      chat.scrollTop = chat.scrollHeight;
     }
 
     function showErr(msg) {
-        errorToast.textContent = '⚠️ ' + msg;
-        errorToast.classList.add('visible');
-        setTimeout(() => errorToast.classList.remove('visible'), 4000);
+      errorToast.textContent = '⚠️ ' + msg;
+      errorToast.classList.add('visible');
+      setTimeout(() => errorToast.classList.remove('visible'), 4000);
     }
 
     function showTyping() {
-        typingRow.classList.add('visible');
-        chat.appendChild(typingRow);
-        chat.scrollTop = chat.scrollHeight;
+      typingRow.classList.add('visible');
+      chat.appendChild(typingRow);
+      chat.scrollTop = chat.scrollHeight;
     }
 
-    function hideTyping() { typingRow.classList.remove('visible'); }
+    function hideTyping() {
+      typingRow.classList.remove('visible');
+    }
 
     async function send() {
-        const text = input.value.trim();
-        if (!text) return;
-        input.value = '';
-        addMsg(text, 'user');
-        showTyping();
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      addMsg(text, 'user');
+      showTyping();
 
-        try {
-            const res = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ mensaje: text, sessionId: sessionId })
-            });
-            if (!res.ok) throw new Error(res.status);
-            const data = await res.json();
-            hideTyping();
-            if (data.respuesta) {
-                addMsg(data.respuesta, 'bot');
-                if (data.modo === 'fallback') {
-                    modeBadge.classList.add('visible');
-                    setTimeout(() => modeBadge.classList.remove('visible'), 5000);
-                }
-            } else {
-                throw new Error('empty');
-            }
-        } catch (e) {
-            hideTyping();
-            showErr('No pude conectar con Lupe. Revisa tu internet.');
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensaje: text, sessionId: sessionId })
+        });
+        if (!res.ok) throw new Error(res.status);
+        const data = await res.json();
+        hideTyping();
+        if (data.respuesta) {
+          addMsg(data.respuesta, 'bot');
+          if (data.modo === 'fallback') {
+            modeBadge.classList.add('visible');
+            setTimeout(() => modeBadge.classList.remove('visible'), 5000);
+          }
+        } else {
+          throw new Error('empty');
         }
+      } catch (e) {
+        hideTyping();
+        showErr('No pude conectar con Lupe. Revisa tu internet.');
+      }
     }
 
     function sendQuick(text) {
-        input.value = text;
-        send();
+      input.value = text;
+      send();
     }
 
     input.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
     });
 
-    // Mensaje inicial
-    setTimeout(() => {
-        addMsg('¡Hola! Soy <strong>Lupe</strong>, tu asistente virtual en la Municipalidad de El Colorado. 🏛️<br><br>Puedo ayudarte con:<br>• Trámites y requisitos<br>• Horarios de atención<br>• Cómo hacer reclamos<br>• Información sobre servicios<br><br>¿En qué puedo ayudarte hoy?', 'bot');
-    }, 700);
-</script>
+    // Scroll progress bar
+    chat.addEventListener('scroll', () => {
+      const p = (chat.scrollTop / (chat.scrollHeight - chat.clientHeight)) * 100;
+      progress.style.width = (isNaN(p) ? 0 : p) + '%';
+    });
 
+    // Welcome message
+    setTimeout(() => {
+      addMsg(
+        '¡Hola! Soy <strong>Lupe</strong>, tu asistente virtual en la Municipalidad de El Colorado. 🏛️<br><br>' +
+        'Puedo ayudarte con:<br>' +
+        '• Trámites y requisitos<br>' +
+        '• Horarios de atención<br>' +
+        '• Cómo hacer reclamos<br>' +
+        '• Información sobre servicios<br><br>' +
+        '¿En qué puedo ayudarte hoy?',
+        'bot'
+      );
+    }, 700);
+  </script>
 </body>
 </html>
